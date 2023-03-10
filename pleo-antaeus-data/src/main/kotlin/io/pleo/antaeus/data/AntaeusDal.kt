@@ -14,6 +14,7 @@ import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.time.Instant
 
 class AntaeusDal(private val db: Database) {
     fun fetchInvoice(id: Int): Invoice? {
@@ -43,10 +44,11 @@ class AntaeusDal(private val db: Database) {
         }
     }
 
-    fun bulkUpdateInvoicesToPaid(invoiceIds: List<Int>) {
+    fun bulkUpdateInvoicesToPaid(invoiceIds: List<Int>, paidTimestampInstant: Instant) {
         return transaction(db) {
             InvoiceTable.update({ InvoiceTable.id inList invoiceIds }) {
-                it[status] = InvoiceStatus.PAID.toString()
+                it[status] = InvoiceStatus.PAID.toString();
+                it[paidTimeStamp] = paidTimestampInstant
             }
         }
     }

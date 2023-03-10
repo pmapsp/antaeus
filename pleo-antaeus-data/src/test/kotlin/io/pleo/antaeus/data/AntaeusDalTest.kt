@@ -1,7 +1,6 @@
 package io.pleo.antaeus.data
 
 import io.pleo.antaeus.models.Currency
-import io.pleo.antaeus.models.Customer
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
 import org.jetbrains.exposed.sql.*
@@ -13,6 +12,9 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import java.io.File
 import java.math.BigDecimal
+import java.time.Clock
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class AntaeusDalTest {
 
@@ -22,6 +24,10 @@ class AntaeusDalTest {
             driver = "org.sqlite.JDBC")
     private lateinit var dal: AntaeusDal
     private val tables = arrayOf(InvoiceTable, CustomerTable)
+
+    private val currentTime = LocalDateTime.of(2023, 3, 10, 14, 0, 0, 0)
+        .toInstant(ZoneOffset.UTC)
+    val testClock: Clock = Clock.fixed(currentTime, ZoneOffset.UTC)
 
     @BeforeEach
     fun setup(){
@@ -199,15 +205,15 @@ class AntaeusDalTest {
         assertNotNull(fetchedInvoices1)
         assertEquals(3, fetchedInvoices1.size)
 
-        dal.bulkUpdateInvoicesToPaid(listOf(invoice1!!.id, invoice2!!.id))
+        dal.bulkUpdateInvoicesToPaid(listOf(invoice1!!.id, invoice2!!.id), testClock.instant())
 
         val fetchedInvoices2 = dal.fetchInvoices()
         assertNotNull(fetchedInvoices2)
         assertEquals(3, fetchedInvoices2.size)
         assertEquals(2, fetchedInvoices2.filter { it.status == InvoiceStatus.PAID }.size)
         assertEquals(1, fetchedInvoices2.filter { it.status == InvoiceStatus.PENDING }.size)
-        assertTrue(fetchedInvoices2.filter { it.status == InvoiceStatus.PAID }.any { it.id == invoice1.id })
-        assertTrue(fetchedInvoices2.filter { it.status == InvoiceStatus.PAID }.any { it.id == invoice2.id })
-        assertTrue(fetchedInvoices2.filter { it.status == InvoiceStatus.PENDING }.any { it.id == invoice3!!.id })
+        assertTrue(fetchedInvoices2.filter { it.status == InvoiceStatus.PAID && it.paidTimeStamp == testClock.instant()}.any { it.id == invoice1.id })
+        assertTrue(fetchedInvoices2.filter { it.status == InvoiceStatus.PAID && it.paidTimeStamp == testClock.instant()}.any { it.id == invoice2.id })
+        assertTrue(fetchedInvoices2.filter { it.status == InvoiceStatus.PENDING && it.paidTimeStamp == null}.any { it.id == invoice3!!.id })
     }
 }

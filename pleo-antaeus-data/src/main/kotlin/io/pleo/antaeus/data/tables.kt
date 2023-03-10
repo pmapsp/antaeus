@@ -6,6 +6,7 @@
 package io.pleo.antaeus.data
 
 import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.`java-time`.timestamp
 
 object InvoiceTable : Table() {
     val id = integer("id").autoIncrement().primaryKey()
@@ -13,6 +14,7 @@ object InvoiceTable : Table() {
     val value = decimal("value", 1000, 2)
     val customerId = reference("customer_id", CustomerTable.id)
     val status = text("status")
+    val paidTimeStamp = timestamp("paidTimeStamp").nullable()
 }
 
 object CustomerTable : Table() {
