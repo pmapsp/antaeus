@@ -245,8 +245,8 @@ class AntaeusDalTest {
         assertEquals(3, fetchedInvoices2.size)
         assertEquals(2, fetchedInvoices2.filter { it.status == InvoiceStatus.PAID }.size)
         assertEquals(1, fetchedInvoices2.filter { it.status == InvoiceStatus.PENDING }.size)
-        assertTrue(fetchedInvoices2.filter { it.status == InvoiceStatus.PAID && it.paidTimeStamp == testClock.instant()}.any { it.id == invoice1.id })
-        assertTrue(fetchedInvoices2.filter { it.status == InvoiceStatus.PAID && it.paidTimeStamp == testClock.instant()}.any { it.id == invoice2.id })
-        assertTrue(fetchedInvoices2.filter { it.status == InvoiceStatus.PENDING && it.paidTimeStamp == null}.any { it.id == invoice3!!.id })
+        assertTrue(fetchedInvoices2.filter { it.status == InvoiceStatus.PAID && it.paidTimestamp == testClock.instant()}.any { it.id == invoice1.id })
+        assertTrue(fetchedInvoices2.filter { it.status == InvoiceStatus.PAID && it.paidTimestamp == testClock.instant()}.any { it.id == invoice2.id })
+        assertTrue(fetchedInvoices2.filter { it.status == InvoiceStatus.PENDING && it.paidTimestamp == null}.any { it.id == invoice3!!.id })
     }
 }

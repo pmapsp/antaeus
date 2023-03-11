@@ -64,8 +64,6 @@ class AntaeusRest(
                         get(":id") {
                             it.json(invoiceService.fetch(it.pathParam("id").toInt()))
                         }
-
-
                     }
 
                     path("customers") {

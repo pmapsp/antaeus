@@ -20,7 +20,7 @@ fun ResultRow.toInvoice(): Invoice = Invoice(
     ),
     status = InvoiceStatus.valueOf(this[InvoiceTable.status]),
     customerId = this[InvoiceTable.customerId],
-    paidTimeStamp = this[InvoiceTable.paidTimeStamp]
+    paidTimestamp = this[InvoiceTable.paidTimestamp]
 )
 
 fun ResultRow.toCustomer(): Customer = Customer(

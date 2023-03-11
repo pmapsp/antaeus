@@ -48,7 +48,7 @@ class AntaeusDal(private val db: Database) {
         return transaction(db) {
             InvoiceTable.update({ InvoiceTable.id inList invoiceIds }) {
                 it[status] = InvoiceStatus.PAID.toString();
-                it[paidTimeStamp] = paidTimestampInstant
+                it[paidTimestamp] = paidTimestampInstant
             }
         }
     }

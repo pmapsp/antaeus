@@ -7,5 +7,5 @@ data class Invoice(
     val customerId: Int,
     val amount: Money,
     val status: InvoiceStatus,
-    val paidTimeStamp: Instant?
+    val paidTimestamp: Instant?
 )
