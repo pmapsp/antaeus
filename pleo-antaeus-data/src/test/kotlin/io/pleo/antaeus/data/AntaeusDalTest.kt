@@ -168,7 +168,7 @@ class AntaeusDalTest {
         dal.createInvoice(amount = Money(value, currency), customer = newCustomer)
         dal.createInvoice(amount = Money(value, currency), customer = newCustomer, status = InvoiceStatus.PAID)
 
-        val fetchedInvoices = dal.fetchPendingInvoices()
+        val fetchedInvoices = dal.fetchInvoicesByStatus(status = InvoiceStatus.PENDING.toString())
         assertNotNull(fetchedInvoices)
         assertEquals(2, fetchedInvoices.size)
     }
@@ -184,7 +184,40 @@ class AntaeusDalTest {
         dal.createInvoice(amount = Money(value, currency), customer = newCustomer, status = InvoiceStatus.PAID)
         dal.createInvoice(amount = Money(value, currency), customer = newCustomer, status = InvoiceStatus.PAID)
 
-        val fetchedInvoices = dal.fetchPendingInvoices()
+        val fetchedInvoices = dal.fetchInvoicesByStatus(status = InvoiceStatus.PENDING.toString())
+        assertNotNull(fetchedInvoices)
+        assertTrue(fetchedInvoices.isEmpty())
+    }
+
+    @Test
+    fun `test fetch paid invoices will return a list of invoices when there are paid invoices`() {
+        val currency = Currency.EUR
+        val value = BigDecimal.ONE
+        val newCustomer = dal.createCustomer(currency = Currency.EUR)
+        assertNotNull(newCustomer)
+        assertEquals(newCustomer!!.currency, currency)
+
+        dal.createInvoice(amount = Money(value, currency), customer = newCustomer)
+        dal.createInvoice(amount = Money(value, currency), customer = newCustomer)
+        dal.createInvoice(amount = Money(value, currency), customer = newCustomer, status = InvoiceStatus.PAID)
+
+        val fetchedInvoices = dal.fetchInvoicesByStatus(status = InvoiceStatus.PAID.toString())
+        assertNotNull(fetchedInvoices)
+        assertEquals(1, fetchedInvoices.size)
+    }
+
+    @Test
+    fun `test fetch paid invoices will return an empty list when there are no paid invoices`() {
+        val currency = Currency.EUR
+        val value = BigDecimal.ONE
+        val newCustomer = dal.createCustomer(currency = Currency.EUR)
+        assertNotNull(newCustomer)
+        assertEquals(newCustomer!!.currency, currency)
+
+        dal.createInvoice(amount = Money(value, currency), customer = newCustomer, status = InvoiceStatus.PENDING)
+        dal.createInvoice(amount = Money(value, currency), customer = newCustomer, status = InvoiceStatus.PENDING)
+
+        val fetchedInvoices = dal.fetchInvoicesByStatus(status = InvoiceStatus.PAID.toString())
         assertNotNull(fetchedInvoices)
         assertTrue(fetchedInvoices.isEmpty())
     }
@@ -201,7 +234,7 @@ class AntaeusDalTest {
         val invoice2 = dal.createInvoice(amount = Money(value, currency), customer = newCustomer)
         val invoice3 = dal.createInvoice(amount = Money(value, currency), customer = newCustomer)
 
-        val fetchedInvoices1 = dal.fetchPendingInvoices()
+        val fetchedInvoices1 = dal.fetchInvoicesByStatus(status =InvoiceStatus.PENDING.toString())
         assertNotNull(fetchedInvoices1)
         assertEquals(3, fetchedInvoices1.size)
 
