@@ -10,7 +10,6 @@ import io.pleo.antaeus.models.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import java.lang.NullPointerException
-import java.util.*
 
 class BillingServiceTest {
 
@@ -38,7 +37,7 @@ class BillingServiceTest {
         assertTrue(result.failedPaidInvoices.isEmpty())
         assertEquals(2, result.successfullyPaidInvoices.size)
 
-        //we are trying just 1 time for each invoice
+        //we are trying just 1 time for each invoice because it's successful
         verify(exactly = 2) { paymentProviderMock.charge(any()) }
         verify(exactly = 1) { invoiceServiceMock.fetchAll(any()) }
         verify(exactly = 1) { invoiceServiceMock.bulkUpdateInvoicesToPaid(any(), any()) }
@@ -64,11 +63,11 @@ class BillingServiceTest {
 
         val result = method.invoke(billingService, 5) as PaidPendingInvoicesResponse
         assertEquals(2, result.failedPaidInvoices.size)
-        assertEquals(FailedReason.INSUFFICIENT_BALANCE, result.failedPaidInvoices[1])
+        assertEquals(PaymentFailedReason.INSUFFICIENT_BALANCE, result.failedPaidInvoices[1])
         assertTrue(result.successfullyPaidInvoices.isEmpty())
 
-        //we are trying 5 times for each invoice
-        verify(exactly = 10) { paymentProviderMock.charge(any()) }
+        //we are trying 1 time for each invoice because the reason is INSUFFICIENT_BALANCE
+        verify(exactly = 2) { paymentProviderMock.charge(any()) }
         verify(exactly = 1) { invoiceServiceMock.fetchAll(any()) }
         verify(exactly = 0) { invoiceServiceMock.bulkUpdateInvoicesToPaid(any(), any()) }
     }
@@ -93,11 +92,11 @@ class BillingServiceTest {
 
         val result = method.invoke(billingService, 5) as PaidPendingInvoicesResponse
         assertEquals(2, result.failedPaidInvoices.size)
-        assertEquals(FailedReason.CUSTOMER_NOT_FOUND, result.failedPaidInvoices[1])
+        assertEquals(PaymentFailedReason.CUSTOMER_NOT_FOUND, result.failedPaidInvoices[1])
         assertTrue(result.successfullyPaidInvoices.isEmpty())
 
-        //we are trying 5 times for each invoice
-        verify(exactly = 10) { paymentProviderMock.charge(any()) }
+        //we are trying 1 time for each invoice because the reason is CUSTOMER_NOT_FOUND
+        verify(exactly = 2) { paymentProviderMock.charge(any()) }
         verify(exactly = 1) { invoiceServiceMock.fetchAll(any()) }
         verify(exactly = 0) { invoiceServiceMock.bulkUpdateInvoicesToPaid(any(), any()) }
     }
@@ -122,11 +121,11 @@ class BillingServiceTest {
 
         val result = method.invoke(billingService, 5) as PaidPendingInvoicesResponse
         assertEquals(2, result.failedPaidInvoices.size)
-        assertEquals(FailedReason.CURRENCY_MISMATCH, result.failedPaidInvoices[1])
+        assertEquals(PaymentFailedReason.CURRENCY_MISMATCH, result.failedPaidInvoices[1])
         assertTrue(result.successfullyPaidInvoices.isEmpty())
 
-        //we are trying 5 times for each invoice
-        verify(exactly = 10) { paymentProviderMock.charge(any()) }
+        //we are trying 1 time for each invoice because the reason is CURRENCY_MISMATCH
+        verify(exactly = 2) { paymentProviderMock.charge(any()) }
         verify(exactly = 1) { invoiceServiceMock.fetchAll(any()) }
         verify(exactly = 0) { invoiceServiceMock.bulkUpdateInvoicesToPaid(any(), any()) }
     }
@@ -151,10 +150,10 @@ class BillingServiceTest {
 
         val result = method.invoke(billingService, 5) as PaidPendingInvoicesResponse
         assertEquals(2, result.failedPaidInvoices.size)
-        assertEquals(FailedReason.NETWORK_FAILURE, result.failedPaidInvoices[1])
+        assertEquals(PaymentFailedReason.NETWORK_FAILURE, result.failedPaidInvoices[1])
         assertTrue(result.successfullyPaidInvoices.isEmpty())
 
-        //we are trying 5 times for each invoice
+        //we are trying 5 times for each invoice because the reason is NETWORK_FAILURE
         verify(exactly = 10) { paymentProviderMock.charge(any()) }
         verify(exactly = 1) { invoiceServiceMock.fetchAll(any()) }
         verify(exactly = 0) { invoiceServiceMock.bulkUpdateInvoicesToPaid(any(), any()) }
@@ -180,10 +179,10 @@ class BillingServiceTest {
 
         val result = method.invoke(billingService, 5) as PaidPendingInvoicesResponse
         assertEquals(2, result.failedPaidInvoices.size)
-        assertEquals(FailedReason.UNKNOWN, result.failedPaidInvoices[1])
+        assertEquals(PaymentFailedReason.UNKNOWN, result.failedPaidInvoices[1])
         assertTrue(result.successfullyPaidInvoices.isEmpty())
 
-        //we are trying 5 times for each invoice
+        //we are trying 5 times for each invoice because the reason is UNKNOWN
         verify(exactly = 10) { paymentProviderMock.charge(any()) }
         verify(exactly = 1) { invoiceServiceMock.fetchAll(any()) }
         verify(exactly = 0) { invoiceServiceMock.bulkUpdateInvoicesToPaid(any(), any()) }
