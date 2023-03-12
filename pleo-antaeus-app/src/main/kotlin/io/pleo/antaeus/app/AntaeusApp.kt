@@ -63,7 +63,7 @@ fun main() {
     // This is _your_ billing service to be included where you see fit
     val billingService = BillingService(paymentProvider = paymentProvider, invoiceService = invoiceService)
 
-    billingService.schedulePendingInvoicePayments(maximumNumberOfTries = 5)
+    billingService.schedulePendingInvoicePayments(maximumNumberOfTries = 5, intervalBetweenTriesInSec = 1)
 
     // Create REST web service
     AntaeusRest(

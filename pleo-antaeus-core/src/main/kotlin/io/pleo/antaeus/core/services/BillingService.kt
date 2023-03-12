@@ -17,7 +17,7 @@ class BillingService(
 
     private val logger = KotlinLogging.logger {}
 
-    fun schedulePendingInvoicePayments(maximumNumberOfTries: Int){
+    fun schedulePendingInvoicePayments(maximumNumberOfTries: Int, intervalBetweenTriesInSec: Long){
         val timer = Timer()
 
         timer.scheduleAtFixedRate(object : TimerTask() {
@@ -30,7 +30,10 @@ class BillingService(
                 if (delay <= TimeUnit.DAYS.toMillis(1)) {
                     timer.schedule(object : TimerTask() {
                         override fun run() {
-                            val payPendingInvoicesResponse = payPendingInvoices(maximumNumberOfTries = maximumNumberOfTries)
+                            val payPendingInvoicesResponse = payPendingInvoices(
+                                maximumNumberOfTries = maximumNumberOfTries,
+                                intervalBetweenTriesInSec = intervalBetweenTriesInSec
+                            )
                             logger.info("The following invoices were processed for payment: $payPendingInvoicesResponse")
                         }
                     }, delay)
@@ -39,7 +42,15 @@ class BillingService(
         },0, TimeUnit.DAYS.toMillis(1))
     }
 
-    private fun payPendingInvoices(maximumNumberOfTries: Int): PaidPendingInvoicesResponse{
+    private fun payPendingInvoices(maximumNumberOfTries: Int, intervalBetweenTriesInSec: Long): PaidPendingInvoicesResponse{
+        if(maximumNumberOfTries <= 0){
+            throw MaxNumberOfTriesException()
+        }
+
+        if(intervalBetweenTriesInSec < 0 ){
+            throw IntervalBetweenTriesInSecException()
+        }
+
         val pendingInvoices =
             invoiceService.fetchAll(status = InvoiceStatus.PENDING.toString()).toMutableSet()
         val successfullyPaidInvoicesIds = mutableListOf<Int>()
@@ -49,7 +60,7 @@ class BillingService(
         while(pendingInvoices.isNotEmpty() && tries < maximumNumberOfTries) {
             if(tries > 0){
                 //waiting 1 second before trying again
-                Thread.sleep(1000)
+                Thread.sleep(TimeUnit.SECONDS.toMillis(intervalBetweenTriesInSec))
             }
             pendingInvoices.removeIf { invoice ->
                 try {
