@@ -7,7 +7,7 @@ docker build . --tag pleo-antaeus
 
 # Build the code.
 docker run \
-  --publish 8000:7000 \
+  --publish 8000:8000 \
   --rm \
   --interactive \
   --tty \
