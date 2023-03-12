@@ -6,12 +6,9 @@ import io.pleo.antaeus.models.PaymentFailedReason
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.PaidPendingInvoicesResponse
 import mu.KotlinLogging
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneId
+import java.time.*
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class BillingService(
     private val paymentProvider: PaymentProvider,
@@ -22,18 +19,24 @@ class BillingService(
 
     fun schedulePendingInvoicePayments(maximumNumberOfTries: Int){
         val timer = Timer()
-        //starting in the next month
-        val firstOfMonth = LocalDate.now().plusMonths(1).withDayOfMonth(1)
-        val firstOfMonthAtMidnight = LocalDateTime.of(firstOfMonth, LocalTime.MIDNIGHT)
-        val delay = firstOfMonthAtMidnight.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - System.currentTimeMillis()
-        val every27Days = 1000L * 60L * 60L * 24L * 27L
 
-        timer.schedule(object : TimerTask() {
+        timer.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
-                val payPendingInvoicesResponse = payPendingInvoices(maximumNumberOfTries = maximumNumberOfTries)
-                logger.info("The following invoices were processed for payment: $payPendingInvoicesResponse")
+                val firstOfMonth = LocalDate.now().plusMonths(1).withDayOfMonth(1)
+                val firstOfMonthAtMidnight = LocalDateTime.of(firstOfMonth, LocalTime.MIDNIGHT)
+                val delay =
+                    firstOfMonthAtMidnight.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - System.currentTimeMillis()
+
+                if (delay <= TimeUnit.DAYS.toMillis(1)) {
+                    timer.schedule(object : TimerTask() {
+                        override fun run() {
+                            val payPendingInvoicesResponse = payPendingInvoices(maximumNumberOfTries = maximumNumberOfTries)
+                            logger.info("The following invoices were processed for payment: $payPendingInvoicesResponse")
+                        }
+                    }, delay)
+                }
             }
-        }, delay, every27Days)
+        },0, TimeUnit.DAYS.toMillis(1))
     }
 
     private fun payPendingInvoices(maximumNumberOfTries: Int): PaidPendingInvoicesResponse{
