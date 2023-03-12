@@ -1,12 +1,24 @@
-> :warning: This repository was archived automatically since no ownership was defined :warning:
->
-> For details on how to claim stewardship of this repository see:
->
-> [How to configure a service in OpsLevel](https://www.notion.so/pleo/How-to-configure-a-service-in-OpsLevel-f6483fcb4fdd4dcc9fc32b7dfe14c262)
->
-> To learn more about the automatic process for stewardship which archived this repository see:
->
-> [Automatic process for stewardship](https://www.notion.so/pleo/Automatic-process-for-stewardship-43d9def9bc9a4010aba27144ef31e0f2)
+It took roughly 6-7 hours of work 
+
+## Thought Process
+1) 1) I first wanted to understand the code and wanted to add the methods that will help in the payment process: fetch
+      invoices by status and update the paid invoices to PAID.
+   2) I also added some tests to check the existing methods and the new ones.
+   3) I updated the version of sqlite since the older version doesn't work on m chips.
+2) Added the payment timestamp to the invoice table to know when the invoice was paid, which will always be useful
+3) Updated the fetch invoice endpoint to filter it by status, which enables us to check more easily which invoices were
+   already paid and which are still pending
+4) Added the bulk update invoices to paid to the Invoice service
+5) 1) Normally this would be an event triggered by AWS CloudWatch cron job for example. Nonetheless, I used the timer
+      class to schedule the payPendingInvoices function to run on the next month in the first day at midnight.
+   2) Using the first scheduleAtFixedRate I calculate every day how much time there is left until the next first day of
+         the month. If this calculation is less or equal than a day (I do this to avoid the creation of multiple calls to
+         be triggered on the 1st of the next month), a schedule is being used to run the payPendingInvoices just once when
+         the first day of the month is reached.
+   3) The payPendingInvoices function tries to pay every pending invoice. If a payment fails because of a Network failure
+      or an unknown reason we can set maximumNumberOfTries to a number bigger than one, and it will try again after 1
+      second. I did this because the reason for failure might be fixed after some time. This function also returns the
+      ids of the paid invoices and the ids of failed payment invoices and the reason why it failed
 
 ## Antaeus
 
